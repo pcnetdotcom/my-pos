@@ -4,115 +4,273 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Grocery POS & Backoffice</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Kanit & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-slate-100 font-sans text-slate-800 selection:bg-indigo-500 selection:text-white">
 
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col justify-between relative">
+    <!-- Container หลักจำลองหน้าจอแอปแบบ Mobile/Tablet Responsive -->
+    <div class="max-w-md mx-auto bg-slate-50 min-h-screen shadow-2xl flex flex-col justify-between relative overflow-hidden border-x border-slate-200">
         
-        <!-- Header -->
-        <header class="bg-blue-600 text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-            <h1 class="text-lg font-bold">🛒 AI Grocery System</h1>
-            <span id="syncStatus" class="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-semibold">Online</span>
+        <!-- Header สไตล์ โมเดิร์น Gradation -->
+        <header class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 text-white p-4 pt-5 flex justify-between items-center sticky top-0 z-20 shadow-md">
+            <div class="flex items-center gap-2.5">
+                <div class="p-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-inner">
+                    <!-- Store Icon SVG -->
+                    <svg class="w-5 h-5 text-indigo-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold tracking-wide leading-none">AI Smart POS</h1>
+                    <span class="text-[10px] text-indigo-200 font-normal">ระบบจัดการร้านค้าอัจฉริยะ</span>
+                </div>
+            </div>
+            <div id="syncStatus" class="flex items-center gap-1.5 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 text-emerald-100 text-xs px-3 py-1 rounded-full font-medium transition-all shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="syncText">Online</span>
+            </div>
         </header>
 
-        <!-- Main Container / Tabs (เพิ่ม pb-24 เพื่อไม่ให้ Navbar บังปุ่มด้านล่าง) -->
-        <div class="p-4 flex-1 overflow-y-auto pb-24">
+        <!-- Main Content Area -->
+        <div class="p-4 flex-1 overflow-y-auto pb-28 hide-scrollbar">
             
             <!-- TAB 1: หน้าขาย (POS) -->
-            <div id="tab-pos" class="tab-content">
-                <div class="mb-3 flex gap-2">
-                    <input type="text" id="barcodeInput" placeholder="สแกนหรือพิมพ์บาร์โค้ด..." class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none" onkeypress="handleBarcodeInput(event)">
-                    <button onclick="openAiModal('sell')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shadow transition">✨ AI สแกนขาย</button>
+            <div id="tab-pos" class="tab-content space-y-4">
+                <!-- Barcode & AI Scan Header -->
+                <div class="grid grid-cols-12 gap-2">
+                    <div class="col-span-8 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
+                        </div>
+                        <input type="text" id="barcodeInput" placeholder="สแกน / พิมพ์บาร์โค้ด..." 
+                            class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs shadow-sm outline-none transition" 
+                            onkeypress="handleBarcodeInput(event)">
+                    </div>
+                    <button onclick="openAiModal('sell')" class="col-span-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-medium shadow-md shadow-indigo-200 flex items-center justify-center gap-1.5 transition active:scale-95">
+                        <svg class="w-4 h-4 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>AI สแกน</span>
+                    </button>
                 </div>
 
-                <h2 class="font-semibold text-gray-700 mb-2 text-sm">ตะกร้าสินค้า</h2>
-                <div id="cartList" class="divide-y border rounded-lg bg-gray-50 p-2 max-h-60 overflow-y-auto mb-4 text-sm">
-                    <p class="text-gray-400 text-center py-6 text-xs">ยังไม่มีสินค้าในตะกร้า</p>
-                </div>
+                <!-- Shopping Cart Card -->
+                <div class="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                            </svg>
+                            <h2 class="font-semibold text-slate-700 text-xs uppercase tracking-wider">ตะกร้าสินค้า</h2>
+                        </div>
+                        <span id="cartCount" class="text-[10px] font-semibold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">0 รายการ</span>
+                    </div>
 
-                <div class="bg-gray-50 p-3 rounded-lg border mb-4">
-                    <div class="flex justify-between text-base font-bold">
-                        <span>ยอดรวมทั้งสิ้น:</span>
-                        <span id="grandTotal" class="text-blue-600">0.00 ฿</span>
+                    <div id="cartList" class="divide-y divide-slate-100 max-h-64 overflow-y-auto pr-1 hide-scrollbar">
+                        <div class="text-center py-10">
+                            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                            </div>
+                            <p class="text-slate-400 text-xs">ยังไม่มีสินค้าในตะกร้า</p>
+                        </div>
                     </div>
                 </div>
 
-                <button onclick="checkout()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700 transition text-sm flex items-center justify-center gap-1">
-                    💳 ชำระเงิน / บันทึกการขาย
+                <!-- Grand Total Card -->
+                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl"></div>
+                    <div class="flex justify-between items-end relative z-10">
+                        <div>
+                            <p class="text-[11px] text-indigo-200 font-medium tracking-wide">ยอดชำระเงินรวมทั้งสิ้น</p>
+                            <span id="grandTotal" class="text-2xl font-bold tracking-tight text-white">0.00 ฿</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-emerald-400 bg-emerald-950/80 border border-emerald-800/50 px-2 py-0.5 rounded-md font-medium">รวมภาษีแล้ว</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkout Button -->
+                <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-emerald-600/20 active:scale-[0.98] transition flex items-center justify-center gap-2 text-sm">
+                    <svg class="w-5 h-5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span>บันทึกการขาย / ชำระเงิน</span>
                 </button>
             </div>
 
             <!-- TAB 2: สต๊อก & AI นำเข้า -->
-            <div id="tab-stock" class="tab-content hidden">
-                <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl mb-4">
-                    <h3 class="font-bold text-purple-800 text-sm mb-1">🤖 AI Smart Restock & Import</h3>
-                    <p class="text-xs text-purple-600 mb-3">ถ่ายรูปสินค้าหรือบิลรายการ เพื่อให้ AI นำเข้าสต๊อกหรือเพิ่มสินค้าให้อัตโนมัติ</p>
-                    <button onclick="openAiModal('import')" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-lg text-sm font-bold shadow transition">📷 เปิดกล้อง AI สแกนสินค้า/สต๊อก</button>
+            <div id="tab-stock" class="tab-content hidden space-y-4">
+                <!-- AI Smart Restock Card -->
+                <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="flex items-start justify-between relative z-10 mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 bg-purple-500/20 rounded-xl border border-purple-400/30">
+                                <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-sm text-purple-100">AI Smart Restock</h3>
+                                <p class="text-[11px] text-purple-300">ถ่ายภาพใบเสร็จหรือสินค้าเพื่ออัปเดตสต๊อกอัตโนมัติ</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="openAiModal('import')" class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white py-2.5 rounded-xl text-xs font-semibold backdrop-blur-md transition flex items-center justify-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l0.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l0.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>เปิดกล้อง AI สแกนสินค้า</span>
+                    </button>
                 </div>
 
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-semibold text-gray-700 text-sm">รายการสินค้าในสต๊อก</h3>
-                    <button onclick="fetchAllData()" class="text-xs text-blue-600 font-semibold hover:underline">🔄 ดึงข้อมูลใหม่</button>
+                <!-- Stock Header -->
+                <div class="flex justify-between items-center pt-1">
+                    <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                        รายการสินค้าในสต๊อก
+                    </h3>
+                    <button onclick="fetchAllData()" class="text-[11px] text-indigo-600 font-semibold hover:text-indigo-800 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        รีเฟรช
+                    </button>
                 </div>
 
-                <div id="stockList" class="space-y-2 max-h-96 overflow-y-auto">
-                    <!-- รายการสินค้าจะแสดงตรงนี้ -->
+                <!-- Stock Item Container -->
+                <div id="stockList" class="space-y-2 max-h-96 overflow-y-auto pr-1 hide-scrollbar">
+                    <!-- รายการสินค้าจะโหลดมาแสดงที่นี่ -->
                 </div>
             </div>
 
-            <!-- TAB 3: หลังบ้าน (Backoffice & Profit) -->
-            <div id="tab-backoffice" class="tab-content hidden">
-                <h2 class="font-bold text-gray-800 mb-3 text-base">📊 รายงานยอดขายและต้นทุนกำไร</h2>
-                
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100 shadow-sm">
-                        <p class="text-xs text-blue-500 font-medium mb-1">ยอดขายรวม</p>
-                        <p id="repRevenue" class="text-lg font-bold text-blue-700">0.00 ฿</p>
+            <!-- TAB 3: หลังบ้าน (Backoffice) -->
+            <div id="tab-backoffice" class="tab-content hidden space-y-4">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
                     </div>
-                    <div class="bg-green-50 p-3.5 rounded-xl border border-green-100 shadow-sm">
-                        <p class="text-xs text-green-500 font-medium mb-1">กำไรสุทธิ</p>
-                        <p id="repProfit" class="text-lg font-bold text-green-700">0.00 ฿</p>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-sm">รายงานสรุปยอดขายและกำไร</h2>
+                        <p class="text-[11px] text-slate-500">ข้อมูลสรุปย้อนหลัง Real-time จาก Google Sheets</p>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 p-3.5 rounded-xl border mb-4 shadow-sm">
-                    <p class="text-xs text-gray-500 mb-1">จำนวนบิลขายทั้งหมด</p>
-                    <p id="repTransactions" class="text-base font-bold text-gray-800">0 บิล</p>
+                <!-- Summary Cards Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div class="w-1.5 h-full bg-blue-500 absolute left-0 top-0"></div>
+                        <p class="text-[11px] text-slate-400 font-medium mb-1">ยอดขายรวม</p>
+                        <p id="repRevenue" class="text-base font-bold text-slate-800">0.00 ฿</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div class="w-1.5 h-full bg-emerald-500 absolute left-0 top-0"></div>
+                        <p class="text-[11px] text-slate-400 font-medium mb-1">กำไรสุทธิ</p>
+                        <p id="repProfit" class="text-base font-bold text-emerald-600">0.00 ฿</p>
+                    </div>
                 </div>
 
-                <button onclick="loadDashboard()" class="w-full bg-blue-100 text-blue-700 hover:bg-blue-200 py-2.5 rounded-lg text-sm font-bold transition">🔄 รีเฟรชข้อมูลหลังบ้าน</button>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-slate-100 rounded-xl text-slate-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[11px] text-slate-400 font-medium">จำนวนบิลขายสำเร็จ</p>
+                            <p id="repTransactions" class="text-base font-bold text-slate-800">0 บิล</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="loadDashboard()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-3 rounded-xl text-xs font-semibold transition border border-indigo-100 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span>อัปเดตข้อมูลรายงานล่าสุด</span>
+                </button>
             </div>
 
         </div>
 
-        <!-- Bottom Navigation Bar -->
-        <nav class="bg-white border-t flex justify-around py-2.5 fixed bottom-0 max-w-md w-full shadow-lg z-20">
-            <button onclick="switchTab('pos')" id="nav-pos" class="text-blue-600 flex flex-col items-center text-xs font-bold transition">🛒 ขายหน้าร้าน</button>
-            <button onclick="switchTab('stock')" id="nav-stock" class="text-gray-400 flex flex-col items-center text-xs font-bold transition">📦 จัดการสต๊อก</button>
-            <button onclick="switchTab('backoffice')" id="nav-backoffice" class="text-gray-400 flex flex-col items-center text-xs font-bold transition">📊 หลังบ้าน/กำไร</button>
+        <!-- Modern Floating Navigation Bar -->
+        <nav class="bg-white/80 backdrop-blur-lg border-t border-slate-200/80 grid grid-cols-3 py-2 fixed bottom-0 max-w-md w-full shadow-2xl z-20">
+            <button onclick="switchTab('pos')" id="nav-pos" class="flex flex-col items-center gap-1 text-indigo-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                </svg>
+                <span class="text-[10px] font-medium">หน้าขาย POS</span>
+            </button>
+            <button onclick="switchTab('stock')" id="nav-stock" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <span class="text-[10px] font-medium">สต๊อกสินค้า</span>
+            </button>
+            <button onclick="switchTab('backoffice')" id="nav-backoffice" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span class="text-[10px] font-medium">รายงานกำไร</span>
+            </button>
         </nav>
     </div>
 
     <!-- AI Simulation Modal -->
-    <div id="aiModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-30">
-        <div class="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl">
-            <h3 class="font-bold text-lg mb-1 text-purple-700">🤖 AI Vision กำลังประมวลผล...</h3>
-            <p class="text-xs text-gray-500 mb-4" id="aiModalDesc">กำลังจำลองการสแกนภาพสินค้าผ่าน AI...</p>
-            <div class="bg-gray-100 h-36 rounded-xl flex flex-col items-center justify-center mb-4 border-2 border-dashed border-purple-300">
-                <span class="text-3xl animate-bounce mb-1">📷✨</span>
-                <span class="text-xs text-purple-600 font-semibold">AIกำลังวิเคราะห์ภาพ...</span>
+    <div id="aiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-30 transition-all">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="p-3 bg-purple-100 text-purple-600 rounded-2xl">
+                    <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base text-slate-800">AI Vision Processing</h3>
+                    <p class="text-[11px] text-slate-400" id="aiModalDesc">กำลังประมวลผลการสแกนผ่านระบบ AI...</p>
+                </div>
             </div>
+
+            <div class="bg-slate-50 h-36 rounded-2xl flex flex-col items-center justify-center mb-5 border-2 border-dashed border-purple-200">
+                <div class="w-12 h-12 rounded-full bg-purple-600/10 flex items-center justify-center text-purple-600 mb-2">
+                    <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l0.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l0.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    </svg>
+                </div>
+                <span class="text-xs font-semibold text-purple-700">กำลังสแกนรูปภาพสินค้า...</span>
+            </div>
+
             <div class="flex gap-2">
-                <button onclick="closeAiModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-semibold transition">ยกเลิก</button>
-                <button onclick="simulateAiSuccess()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-semibold transition">จำลองผล AI</button>
+                <button onclick="closeAiModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-2.5 rounded-xl text-xs font-semibold transition">ยกเลิก</button>
+                <button onclick="simulateAiSuccess()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-purple-200 transition">ยืนยันการสแกน</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ใส่ URL ที่ได้จากการ Deploy Google Apps Script ตัวอย่าง: https://script.google.com/macros/s/XXXXX/exec
-        const API_URL = "https://script.google.com/macros/s/AKfycbyAVnteBtw-j5ECqjwbXXn-6lzo9O8E1cijdb4t8HYDN2GeuhyebK0IPwQcZBpFKAIW/exec"; 
+        // ใส่ URL ที่ได้จาก Google Apps Script
+         const API_URL = "https://script.google.com/macros/s/AKfycbyAVnteBtw-j5ECqjwbXXn-6lzo9O8E1cijdb4t8HYDN2GeuhyebK0IPwQcZBpFKAIW/exec"; 
         
         let products = [];
         let cart = [];
@@ -123,30 +281,30 @@
         };
 
         function fetchAllData() {
-            setSyncStatus("Syncing...", "bg-yellow-500");
+            setSyncStatus("กำลังเชื่อมต่อ...", "bg-amber-500/20 text-amber-100 border-amber-400/30", "bg-amber-400");
             fetch(API_URL + "?action=getProducts")
                 .then(res => res.json())
                 .then(data => {
                     if(data.status === "success") {
                         products = data.data;
                         renderStockList();
-                        setSyncStatus("Online", "bg-green-500");
+                        setSyncStatus("Online", "bg-emerald-500/20 text-emerald-100 border-emerald-400/30", "bg-emerald-400");
                     } else {
-                        alert("ดึงข้อมูลไม่สำเร็จ: " + data.message);
-                        setSyncStatus("Error", "bg-red-500");
+                        setSyncStatus("Error", "bg-rose-500/20 text-rose-100 border-rose-400/30", "bg-rose-400");
                     }
                 })
                 .catch(err => {
-                    console.error(err);
-                    setSyncStatus("Offline", "bg-red-500");
+                    setSyncStatus("Offline", "bg-rose-500/20 text-rose-100 border-rose-400/30", "bg-rose-400");
                 });
             loadDashboard();
         }
 
-        function setSyncStatus(text, bgClass) {
+        function setSyncStatus(text, bgClass, dotClass) {
             const statusEl = document.getElementById('syncStatus');
-            statusEl.innerText = text;
-            statusEl.className = `text-xs text-white px-2 py-1 rounded-full font-semibold ${bgClass}`;
+            const syncText = document.getElementById('syncText');
+            syncText.innerText = text;
+            statusEl.className = `flex items-center gap-1.5 backdrop-blur-md border px-3 py-1 rounded-full text-xs font-medium transition-all shadow-sm ${bgClass}`;
+            statusEl.querySelector('span').className = `w-2 h-2 rounded-full animate-pulse ${dotClass}`;
         }
 
         function switchTab(tabName) {
@@ -155,13 +313,14 @@
 
             ['pos', 'stock', 'backoffice'].forEach(t => {
                 const btn = document.getElementById('nav-' + t);
-                btn.className = t === tabName ? "text-blue-600 flex flex-col items-center text-xs font-bold transition" : "text-gray-400 flex flex-col items-center text-xs font-bold transition";
+                btn.className = t === tabName 
+                    ? "flex flex-col items-center gap-1 text-indigo-600 font-semibold transition" 
+                    : "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition";
             });
 
             if(tabName === 'backoffice') loadDashboard();
         }
 
-        // POS Functions
         function handleBarcodeInput(e) {
             if (e.key === 'Enter') {
                 addProductToCart(e.target.value.trim());
@@ -180,7 +339,7 @@
             const item = cart.find(i => i.barcode === barcode);
             if(item) { 
                 if (item.qty + 1 > product.stock) {
-                    alert(`สินค้า [${product.name}] คงเหลือในสต๊อกเพียง ${product.stock} ชิ้น`);
+                    alert(`สินค้า [${product.name}] คงเหลือเพียง ${product.stock} ชิ้น`);
                     return;
                 }
                 item.qty++; 
@@ -197,23 +356,37 @@
         function renderCart() {
             const list = document.getElementById('cartList');
             const totalEl = document.getElementById('grandTotal');
+            const countEl = document.getElementById('cartCount');
+
+            countEl.innerText = `${cart.length} รายการ`;
+
             if(cart.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 text-center py-6 text-xs">ยังไม่มีสินค้าในตะกร้า</p>';
+                list.innerHTML = `
+                <div class="text-center py-10">
+                    <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </div>
+                    <p class="text-slate-400 text-xs">ยังไม่มีสินค้าในตะกร้า</p>
+                </div>`;
                 totalEl.innerText = '0.00 ฿';
                 return;
             }
+
             let html = '', total = 0;
             cart.forEach((item, idx) => {
                 let sub = item.price * item.qty;
                 total += sub;
-                html += `<div class="py-2 flex justify-between items-center">
+                html += `
+                <div class="py-2.5 flex justify-between items-center">
                     <div>
-                        <p class="font-medium text-xs text-gray-800">${item.name}</p>
-                        <p class="text-[10px] text-gray-500">${item.price.toLocaleString()} ฿ x ${item.qty}</p>
+                        <p class="font-medium text-xs text-slate-800">${item.name}</p>
+                        <p class="text-[11px] text-slate-400">${item.price.toLocaleString()} ฿ × ${item.qty}</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-xs text-gray-800">${sub.toLocaleString()} ฿</span>
-                        <button onclick="cart.splice(${idx},1);renderCart()" class="text-red-500 hover:text-red-700 text-xs px-1">❌</button>
+                    <div class="flex items-center gap-3">
+                        <span class="font-semibold text-xs text-slate-800">${sub.toLocaleString()} ฿</span>
+                        <button onclick="cart.splice(${idx},1);renderCart()" class="text-slate-300 hover:text-rose-500 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
                     </div>
                 </div>`;
             });
@@ -222,11 +395,10 @@
         }
 
         function checkout() {
-            if(cart.length === 0) return alert("ตะกร้าว่างเปล่า");
+            if(cart.length === 0) return alert("กรุณาเลือกสินค้าลงตะกร้าก่อนทำการบันทึก");
 
-            setSyncStatus("Processing...", "bg-yellow-500");
+            setSyncStatus("กำลังบันทึก...", "bg-amber-500/20 text-amber-100 border-amber-400/30", "bg-amber-400");
 
-            // ส่งข้อมูลผ่าน POST
             fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -235,44 +407,44 @@
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
-                    alert("✅ บันทึกการขายสำเร็จ!\nยอดรวม: " + data.totalRevenue.toLocaleString() + " ฿ (กำไร: " + data.totalProfit.toLocaleString() + " ฿)");
+                    alert("✅ บันทึกการขายเรียบร้อยแล้ว!");
                     cart = [];
                     renderCart();
                     fetchAllData();
                 } else {
-                    alert("❌ เกิดข้อผิดพลาด: " + data.message);
-                    setSyncStatus("Online", "bg-green-500");
+                    alert("❌ ข้อผิดพลาด: " + data.message);
+                    setSyncStatus("Online", "bg-emerald-500/20 text-emerald-100 border-emerald-400/30", "bg-emerald-400");
                 }
             })
             .catch(err => {
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-                setSyncStatus("Error", "bg-red-500");
+                alert("เกิดปัญหาในการบันทึกข้อมูล");
+                setSyncStatus("Error", "bg-rose-500/20 text-rose-100 border-rose-400/30", "bg-rose-400");
             });
         }
 
-        // Stock List Render
         function renderStockList() {
             const list = document.getElementById('stockList');
             if(products.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 text-center py-6 text-xs">ยังไม่มีรายการสินค้าในระบบ</p>';
+                list.innerHTML = '<p class="text-slate-400 text-center py-8 text-xs">ยังไม่มีรายการสินค้า</p>';
                 return;
             }
             let html = '';
             products.forEach(p => {
-                html += `<div class="bg-white p-3 rounded-xl border flex justify-between items-center text-xs shadow-sm">
+                const isLow = p.stock <= 5;
+                html += `
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 flex justify-between items-center text-xs shadow-sm">
                     <div>
-                        <p class="font-bold text-gray-800">${p.name}</p>
-                        <p class="text-gray-400 text-[11px]">รหัส: ${p.barcode} | ทุน: ${p.cost} ฿ | ขาย: ${p.price} ฿</p>
+                        <p class="font-bold text-slate-800">${p.name}</p>
+                        <p class="text-slate-400 text-[10px] mt-0.5">บาร์โค้ด: ${p.barcode} | ทุน: ${p.cost}฿ | ขาย: ${p.price}฿</p>
                     </div>
-                    <span class="${p.stock > 5 ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'} px-2 py-1 rounded-lg font-bold whitespace-nowrap">
-                        คงเหลือ: ${p.stock}
+                    <span class="${isLow ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-600 border border-slate-100'} px-2.5 py-1 rounded-xl text-[11px] font-semibold whitespace-nowrap">
+                        เหลือ ${p.stock}
                     </span>
                 </div>`;
             });
             list.innerHTML = html;
         }
 
-        // Backoffice Dashboard
         function loadDashboard() {
             fetch(API_URL + "?action=getDashboard")
             .then(res => res.json())
@@ -285,10 +457,9 @@
             });
         }
 
-        // AI Modal Simulation
         function openAiModal(mode) {
             currentAiMode = mode;
-            document.getElementById('aiModalDesc').innerText = mode === 'sell' ? "AI กำลังวิเคราะห์ภาพสินค้าเพื่อหยิบใส่ตะกร้า..." : "AI กำลังอ่านป้ายสินค้า/บิลเพื่อนำเข้าสต๊อก...";
+            document.getElementById('aiModalDesc').innerText = mode === 'sell' ? "AI กำลังวิเคราะห์สินค้าเพื่อหยิบใส่ตะกร้า..." : "AI กำลังอ่านป้ายสินค้า/บิลเพื่อเพิ่มสต๊อก...";
             document.getElementById('aiModal').classList.remove('hidden');
         }
 
@@ -298,14 +469,12 @@
 
         function simulateAiSuccess() {
             closeAiModal();
-            if(products.length === 0) return alert("ยังไม่มีฐานข้อมูลสินค้าในระบบ");
+            if(products.length === 0) return alert("ไม่พบข้อมูลสินค้า");
             
             const sampleProduct = products[0]; 
             if(currentAiMode === 'sell') {
                 addProductToCart(sampleProduct.barcode);
-                alert("✨ AI สแกนภาพสำเร็จ: เพิ่ม [" + sampleProduct.name + "] ลงตะกร้าแล้ว");
             } else {
-                setSyncStatus("AI Updating...", "bg-purple-500");
                 fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -314,10 +483,8 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.status === "success") {
-                        alert("✨ AI นำเข้าสต๊อกสำเร็จ: [" + data.name + "] เพิ่มขึ้น +10 ชิ้น (สต๊อกใหม่: " + data.newStock + ")");
+                        alert("✨ AI เติมสต๊อกสำเร็จ: [" + data.name + "] เพิ่ม +10 ชิ้น");
                         fetchAllData();
-                    } else {
-                        alert("เกิดข้อผิดพลาด: " + data.message);
                     }
                 });
             }
