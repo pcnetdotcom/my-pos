@@ -3,288 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Grocery POS & Backoffice</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>AI Smart POS & Backoffice</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', 'Inter', sans-serif; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { font-family: 'Kanit', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800">
+<body class="bg-slate-50 text-slate-800 pb-20">
 
-    <div class="max-w-md mx-auto bg-slate-50 min-h-screen shadow-2xl flex flex-col justify-between relative border-x border-slate-200">
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div>
+            <h1 class="text-lg font-semibold">🛒 AI Smart POS</h1>
+            <p class="text-xs text-indigo-200">ระบบจัดการร้านค้าอัจฉริยะ</p>
+        </div>
+        <span class="bg-emerald-500 text-white text-xs px-2.5 py-1 rounded-full font-medium animate-pulse">Online</span>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto p-4">
         
-        <!-- Header -->
-        <header class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 text-white p-4 pt-5 flex justify-between items-center sticky top-0 z-20 shadow-md">
-            <div class="flex items-center gap-2.5">
-                <div class="p-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-                    <svg class="w-5 h-5 text-indigo-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                </div>
-                <div>
-                    <h1 class="text-base font-bold tracking-wide leading-none">AI Smart POS</h1>
-                    <span class="text-[10px] text-indigo-200">ระบบจัดการร้านค้าอัจฉริยะ</span>
-                </div>
-            </div>
-            <div id="syncStatus" class="flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/30 text-emerald-100 text-xs px-3 py-1 rounded-full font-medium">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span id="syncText">Online</span>
-            </div>
-        </header>
-
-        <!-- Content Area -->
-        <div class="p-4 flex-1 overflow-y-auto pb-28 hide-scrollbar">
-            
-            <!-- TAB 1: POS -->
-            <div id="tab-pos" class="tab-content space-y-4">
-                <div class="grid grid-cols-12 gap-2">
-                    <div class="col-span-8 relative">
-                        <input type="text" id="barcodeInput" placeholder="สแกน / พิมพ์บาร์โค้ด..." class="w-full pl-3 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500" onkeypress="handleBarcodeInput(event)">
-                    </div>
-                    <button onclick="openAiModal('sell')" class="col-span-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-xs font-medium flex items-center justify-center gap-1">
-                        ✨ AI สแกนขาย
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm">
-                    <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
-                        <h2 class="font-semibold text-slate-700 text-xs">ตะกร้าสินค้า</h2>
-                        <span id="cartCount" class="text-[10px] font-semibold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">0 รายการ</span>
-                    </div>
-                    <div id="cartList" class="divide-y divide-slate-100 max-h-64 overflow-y-auto hide-scrollbar">
-                        <p class="text-slate-400 text-center py-8 text-xs">ยังไม่มีสินค้าในตะกร้า</p>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-lg flex justify-between items-end">
-                    <div>
-                        <p class="text-[11px] text-indigo-200">ยอดชำระเงินรวม</p>
-                        <span id="grandTotal" class="text-2xl font-bold">0.00 ฿</span>
-                    </div>
-                </div>
-
-                <button onclick="checkout()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-semibold text-sm shadow-lg shadow-emerald-600/20 active:scale-95 transition">
-                    💳 บันทึกการขาย / ชำระเงิน
-                </button>
-            </div>
-
-            <!-- TAB 2: STOCK -->
-            <div id="tab-stock" class="tab-content hidden space-y-4">
-                <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-4 rounded-2xl">
-                    <h3 class="font-bold text-sm mb-1">🤖 AI Smart Restock</h3>
-                    <p class="text-[11px] text-purple-200 mb-3">ถ่ายรูปใบเสร็จหรือป้ายสินค้าเพื่อเติมสต๊อก</p>
-                    <button onclick="openAiModal('import')" class="w-full bg-white/10 border border-white/20 text-white py-2.5 rounded-xl text-xs font-semibold">📷 ถ่ายรูป AI เติมสต๊อก</button>
-                </div>
-                <div id="stockList" class="space-y-2 max-h-96 overflow-y-auto hide-scrollbar"></div>
-            </div>
-
-            <!-- TAB 3: BACKOFFICE -->
-            <div id="tab-backoffice" class="tab-content hidden space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white p-4 rounded-2xl border shadow-sm">
-                        <p class="text-[11px] text-slate-400">ยอดขายรวม</p>
-                        <p id="repRevenue" class="text-base font-bold text-slate-800">0.00 ฿</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border shadow-sm">
-                        <p class="text-[11px] text-slate-400">กำไรสุทธิ</p>
-                        <p id="repProfit" class="text-base font-bold text-emerald-600">0.00 ฿</p>
-                    </div>
-                </div>
-                <button onclick="loadDashboard()" class="w-full bg-indigo-50 text-indigo-600 py-3 rounded-xl text-xs font-semibold">🔄 อัปเดตรายงาน</button>
-            </div>
-
-        </div>
-
-        <!-- Navigation Bar -->
-        <nav class="bg-white border-t border-slate-200 grid grid-cols-3 py-2 fixed bottom-0 max-w-md w-full z-20">
-            <button onclick="switchTab('pos')" id="nav-pos" class="flex flex-col items-center text-indigo-600 font-semibold text-[10px]">🛒 หน้าขาย</button>
-            <button onclick="switchTab('stock')" id="nav-stock" class="flex flex-col items-center text-slate-400 text-[10px]">📦 สต๊อกสินค้า</button>
-            <button onclick="switchTab('backoffice')" id="nav-backoffice" class="flex flex-col items-center text-slate-400 text-[10px]">📊 กำไรสุทธิ</button>
-        </nav>
-    </div>
-
-    <!-- Modal AI Vision ถ่ายรูปจริง -->
-    <div id="aiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-30">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 class="font-bold text-base text-slate-800 mb-1">📷 AI Vision Camera</h3>
-            <p class="text-[11px] text-slate-400 mb-4" id="aiModalDesc">ถ่ายรูปสินค้าเพื่อส่งประมวลผลด้วย AI</p>
-
-            <div class="bg-slate-50 min-h-[160px] rounded-2xl flex flex-col items-center justify-center mb-4 border-2 border-dashed border-purple-200 relative overflow-hidden">
-                <img id="previewImage" class="hidden w-full h-40 object-cover rounded-2xl" />
-                <div id="uploadPlaceholder" class="text-center p-4">
-                    <svg class="w-10 h-10 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l0.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l0.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
-                    <label class="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">
-                        📷 ถ่ายรูป / เลือกรูป
-                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
-                    </label>
+        <!-- Tab 1: POS หน้าขาย -->
+        <section id="tab-pos" class="space-y-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <label class="block text-sm font-medium text-slate-700 mb-2">สแกนหรือค้นหารหัสสินค้า</label>
+                <div class="flex gap-2">
+                    <input type="text" id="barcode-input" placeholder="พิมพ์บาร์โค้ด หรือใช้ AI สแกน" class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button onclick="openAiVision('pos')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1 shadow-sm active:scale-95 transition">📸 AI สแกน</button>
                 </div>
             </div>
 
-            <div id="aiStatusText" class="text-center text-xs text-purple-600 font-semibold mb-3 hidden">⏳ กำลังวิเคราะห์ภาพด้วย AI...</div>
+            <!-- Cart Items -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-sm font-semibold text-slate-700 mb-3">รายการสินค้าในตะกร้า</h2>
+                <div id="cart-list" class="divide-y divide-slate-100 max-h-60 overflow-y-auto mb-4">
+                    <p class="text-xs text-slate-400 text-center py-4">ยังไม่มีสินค้าในตะกร้า</p>
+                </div>
+                <div class="border-t border-slate-100 pt-3 flex justify-between items-center mb-4">
+                    <span class="font-medium text-slate-600">ยอดรวมทั้งสิ้น:</span>
+                    <span id="cart-total" class="text-xl font-bold text-indigo-600">0.00 ฿</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-medium shadow-sm hover:bg-emerald-700 active:scale-95 transition">ยืนยันการชำระเงิน</button>
+            </div>
+        </section>
 
+        <!-- Tab 2: Stock จัดการสต็อก -->
+        <section id="tab-stock" class="hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center py-8">
+                <h2 class="text-base font-semibold text-slate-700 mb-2">AI Smart Restock</h2>
+                <p class="text-xs text-slate-400 mb-4">ถ่ายรูปป้ายสินค้าหรือบาร์โค้ดเพื่อเติมสต็อกอัตโนมัติ</p>
+                <button onclick="openAiVision('restock')" class="bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-medium shadow-sm active:scale-95 transition">📸 ถ่ายรูป AI เติมสต็อก</button>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">รายการสินค้าทั้งหมด</h3>
+                <div id="product-list" class="space-y-2 max-h-96 overflow-y-auto">
+                    <!-- รายการสินค้าดึงจาก Sheets -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Dashboard รายงานกำไร -->
+        <section id="tab-dashboard" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-xs text-slate-400 mb-1">ยอดขายรวม</p>
+                    <h3 id="dash-revenue" class="text-lg font-bold text-indigo-600">0.00 ฿</h3>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-xs text-slate-400 mb-1">กำไรสุทธิ</p>
+                    <h3 id="dash-profit" class="text-lg font-bold text-emerald-600">0.00 ฿</h3>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-400 mb-1">จำนวนธุรกรรมทั้งหมด</p>
+                <h3 id="dash-transactions" class="text-lg font-bold text-slate-700">0 รายการ</h3>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-3 flex justify-around shadow-lg z-50">
+        <button onclick="switchTab('pos')" id="nav-pos" class="text-indigo-600 flex flex-col items-center text-xs font-medium">🛒 หน้าขาย</button>
+        <button onclick="switchTab('stock')" id="nav-stock" class="text-slate-400 flex flex-col items-center text-xs font-medium">📦 สต็อกสินค้า</button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="text-slate-400 flex flex-col items-center text-xs font-medium">📊 กำไรสุทธิ</button>
+    </nav>
+
+    <!-- AI Vision Modal (Camera) -->
+    <div id="ai-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-slate-700">AI Vision Camera</h3>
+                <button onclick="closeAiVision()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <div class="relative bg-black rounded-2xl overflow-hidden aspect-square flex items-center justify-center">
+                <video id="camera-preview" autoplay playsinline class="w-full h-full object-cover"></video>
+                <canvas id="camera-canvas" class="hidden"></canvas>
+            </div>
             <div class="flex gap-2">
-                <button onclick="closeAiModal()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs font-semibold">ยกเลิก</button>
-                <button id="btnConfirmAi" onclick="sendToAiVision()" class="flex-1 bg-purple-600 text-white py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50" disabled>ส่งประมวลผล AI</button>
+                <button onclick="closeAiVision()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl text-sm font-medium">ยกเลิก</button>
+                <button onclick="captureAndSendAi()" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium shadow-sm">ส่งประมวลผล AI</button>
             </div>
         </div>
     </div>
 
+    <!-- Script ควบคุมระบบ -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyAVnteBtw-j5ECqjwbXXn-6lzo9O8E1cijdb4t8HYDN2GeuhyebK0IPwQcZBpFKAIW/exec"; 
-        let products = [], cart = [], currentAiMode = '', selectedBase64 = '';
+        const API_URL = "https://script.google.com/macros/s/AKfycbyAVnteBtw-j5ECqjwbXXn-6lzo9O8E1cijdb4t8HYDN2GeuhyebK0IPwQcZBpFKAIW/exec";
+        let products = [];
+        let cart = [];
+        let currentAiMode = 'pos';
+        let mediaStream = null;
 
-        window.onload = function() { fetchAllData(); };
+        window.onload = () => {
+            fetchProducts();
+            fetchDashboard();
+        };
 
-        function fetchAllData() {
-            fetch(API_URL + "?action=getProducts")
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === "success") {
-                        products = data.data;
-                        renderStockList();
-                    }
+        function switchTab(tab) {
+            ['pos', 'stock', 'dashboard'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "text-slate-400 flex flex-col items-center text-xs font-medium";
+            });
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-${tab}`).className = "text-indigo-600 flex flex-col items-center text-xs font-medium";
+            if(tab === 'dashboard') fetchDashboard();
+            if(tab === 'stock') fetchProducts();
+        }
+
+        async function fetchProducts() {
+            try {
+                const res = await fetch(`${API_URL}?action=getProducts`);
+                const json = await res.json();
+                if(json.status === 'success') {
+                    products = json.data;
+                    renderProductList();
+                }
+            } catch(err) { console.error(err); }
+        }
+
+        function renderProductList() {
+            const container = document.getElementById('product-list');
+            container.innerHTML = products.map(p => `
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm">
+                    <div>
+                        <p class="font-medium text-slate-700">${p.name}</p>
+                        <p class="text-xs text-slate-400">บาร์โค้ด: ${p.barcode} | ราคา: ${p.price} ฿</p>
+                    </div>
+                    <span class="bg-indigo-50 text-indigo-600 font-semibold px-2.5 py-1 rounded-lg text-xs">เหลือ ${p.stock}</span>
+                </div>
+            `).join('');
+        }
+
+        async function fetchDashboard() {
+            try {
+                const res = await fetch(`${API_URL}?action=getDashboard`);
+                const json = await res.json();
+                if(json.status === 'success') {
+                    document.getElementById('dash-revenue').innerText = json.summary.revenue.toLocaleString() + ' ฿';
+                    document.getElementById('dash-profit').innerText = json.summary.profit.toLocaleString() + ' ฿';
+                    document.getElementById('dash-transactions').innerText = json.summary.transactions + ' รายการ';
+                }
+            } catch(err) { console.error(err); }
+        }
+
+        // เปิดกล้อง AI Vision
+        async function openAiVision(mode) {
+            currentAiMode = mode;
+            document.getElementById('ai-modal').classList.remove('hidden');
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                document.getElementById('camera-preview').srcObject = mediaStream;
+            } catch(err) {
+                alert('ไม่สามารถเปิดกล้องได้: ' + err.message);
+                closeAiVision();
+            }
+        }
+
+        function closeAiVision() {
+            if(mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('ai-modal').classList.add('hidden');
+        }
+
+        async function captureAndSendAi() {
+            const video = document.getElementById('camera-preview');
+            const canvas = document.getElementById('camera-canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
+            
+            closeAiVision();
+            alert('กำลังส่งภาพให้ AI ประมวลผล...');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'processAiVision', image: base64Image, mode: currentAiMode })
                 });
-            loadDashboard();
+                const json = await res.json();
+                if(json.status === 'success') {
+                    const code = json.barcode;
+                    if(currentAiMode === 'pos') {
+                        const prod = products.find(p => p.barcode === code || p.name.includes(code));
+                        if(prod) {
+                            addToCart(prod.barcode);
+                        } else {
+                            alert('AI อ่านได้ค่า "' + code + '" แต่ไม่พบในสต็อกสินค้า');
+                        }
+                    } else if(currentAiMode === 'restock') {
+                        restockByAi(code);
+                    }
+                } else {
+                    alert('AI อ่านภาพไม่ได้: ' + json.message);
+                }
+            } catch(err) {
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ AI: ' + err.toString());
+            }
         }
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById('tab-' + tabName).classList.remove('hidden');
-            if(tabName === 'backoffice') loadDashboard();
+        async function restockByAi(barcode) {
+            let qty = prompt("AI ตรวจพบบาร์โค้ด: " + barcode + "\nต้องการเพิ่มสต็อกจำนวนเท่าไหร่?", "10");
+            if(!qty) return;
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'aiRestock', barcode: barcode, qty: Number(qty) })
+                });
+                const json = await res.json();
+                if(json.status === 'success') {
+                    alert(`เติมสต็อกสำเร็จ! สินค้า ${json.name} คงเหลือ ${json.newStock}`);
+                    fetchProducts();
+                } else {
+                    alert(json.message);
+                }
+            } catch(err) { alert(err); }
         }
 
-        function handleBarcodeInput(e) {
-            if (e.key === 'Enter') { addProductToCart(e.target.value.trim()); e.target.value = ''; }
-        }
-
-        function addProductToCart(barcode) {
-            const product = products.find(p => p.barcode === barcode);
-            if (!product) return alert("ไม่พบสินค้าบาร์โค้ด: " + barcode);
+        function addToCart(barcode) {
+            const prod = products.find(p => p.barcode === barcode);
+            if(!prod) return alert('ไม่พบสินค้า');
             const item = cart.find(i => i.barcode === barcode);
-            if(item) { item.qty++; } else { cart.push({...product, qty: 1}); }
+            if(item) {
+                item.qty += 1;
+            } else {
+                cart.push({ barcode: prod.barcode, name: prod.name, price: prod.price, qty: 1 });
+            }
             renderCart();
         }
 
         function renderCart() {
-            const list = document.getElementById('cartList');
-            const totalEl = document.getElementById('grandTotal');
-            document.getElementById('cartCount').innerText = `${cart.length} รายการ`;
-
+            const list = document.getElementById('cart-list');
             if(cart.length === 0) {
-                list.innerHTML = '<p class="text-slate-400 text-center py-8 text-xs">ยังไม่มีสินค้าในตะกร้า</p>';
-                totalEl.innerText = '0.00 ฿';
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีสินค้าในตะกร้า</p>`;
+                document.getElementById('cart-total').innerText = '0.00 ฿';
                 return;
             }
-            let html = '', total = 0;
-            cart.forEach((item, idx) => {
-                let sub = item.price * item.qty;
-                total += sub;
-                html += `<div class="py-2 flex justify-between items-center text-xs">
-                    <div><p class="font-medium">${item.name}</p><p class="text-slate-400">${item.price} ฿ × ${item.qty}</p></div>
-                    <div class="flex items-center gap-2"><span class="font-bold">${sub} ฿</span><button onclick="cart.splice(${idx},1);renderCart()" class="text-red-500">❌</button></div>
-                </div>`;
-            });
-            list.innerHTML = html;
-            totalEl.innerText = total.toLocaleString('th-TH', { minimumFractionDigits: 2 }) + ' ฿';
+            let total = 0;
+            list.innerHTML = cart.map((item, idx) => {
+                total += item.price * item.qty;
+                return `
+                    py-2 flex justify-between items-center text-sm">
+                        <div>
+                            <p class="font-medium text-slate-700">${item.name}</p>
+                            <p class="text-xs text-slate-400">${item.price} ฿ x ${item.qty}</p>
+                        </div>
+                        <button onclick="cart.splice(${idx}, 1); renderCart();" class="text-rose-500 text-xs">ลบ</button>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('cart-total').innerText = total.toLocaleString() + ' ฿';
         }
 
-        function checkout() {
-            if(cart.length === 0) return alert("ตะกร้าว่างเปล่า");
-            fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "sell", items: cart.map(i => ({barcode: i.barcode, qty: i.qty})) })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === "success") {
-                    alert("✅ บันทึกการขายเรียบร้อย!");
-                    cart = []; renderCart(); fetchAllData();
-                }
-            });
-        }
-
-        function renderStockList() {
-            const list = document.getElementById('stockList');
-            let html = '';
-            products.forEach(p => {
-                html += `<div class="bg-white p-3 rounded-2xl border flex justify-between items-center text-xs">
-                    <div><p class="font-bold">${p.name}</p><p class="text-slate-400">บาร์โค้ด: ${p.barcode} | ขาย: ${p.price}฿</p></div>
-                    <span class="bg-slate-100 px-2.5 py-1 rounded-xl font-semibold">เหลือ ${p.stock}</span>
-                </div>`;
-            });
-            list.innerHTML = html;
-        }
-
-        function loadDashboard() {
-            fetch(API_URL + "?action=getDashboard").then(res => res.json()).then(data => {
-                if(data.status === "success") {
-                    document.getElementById('repRevenue').innerText = data.summary.revenue.toLocaleString() + ' ฿';
-                    document.getElementById('repProfit').innerText = data.summary.profit.toLocaleString() + ' ฿';
-                }
-            });
-        }
-
-        // AI Modal & Vision Camera Functions
-        function openAiModal(mode) {
-            currentAiMode = mode;
-            selectedBase64 = '';
-            document.getElementById('previewImage').classList.add('hidden');
-            document.getElementById('uploadPlaceholder').classList.remove('hidden');
-            document.getElementById('btnConfirmAi').disabled = true;
-            document.getElementById('aiModal').classList.remove('hidden');
-        }
-
-        function closeAiModal() { document.getElementById('aiModal').classList.add('hidden'); }
-
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const img = document.getElementById('previewImage');
-                img.src = evt.target.result;
-                img.classList.remove('hidden');
-                document.getElementById('uploadPlaceholder').classList.add('hidden');
-                selectedBase64 = evt.target.result.split(',')[1];
-                document.getElementById('btnConfirmAi').disabled = false;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function sendToAiVision() {
-            if(!selectedBase64) return;
-            document.getElementById('aiStatusText').classList.remove('hidden');
-            document.getElementById('btnConfirmAi').disabled = true;
-
-            fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "processAiVision", imageBase64: selectedBase64, mode: currentAiMode })
-            })
-            .then(res => res.json())
-            .then(res => {
-                document.getElementById('aiStatusText').classList.add('hidden');
-                closeAiModal();
-                if(res.status === "success" && res.data.barcode) {
-                    if(currentAiMode === 'sell') {
-                        addProductToCart(res.data.barcode);
-                        alert("✨ AI ตรวจพบบาร์โค้ด: " + res.data.barcode + " (นำลงตะกร้าแล้ว)");
-                    } else {
-                        const qty = res.data.qty || 10;
-                        fetch(API_URL, {
-                            method: "POST",
-                            headers: { "Content-Type": "text/plain;charset=utf-8" },
-                            body: JSON.stringify({ action: "aiRestock", barcode: res.data.barcode, qty: qty })
-                        }).then(() => { alert("✨ AI เติมสต๊อกบาร์โค้ด " + res.data.barcode + " จำนวน +" + qty); fetchAllData(); });
-                    }
+        async function checkout() {
+            if(cart.length === 0) return alert('ตะกร้าว่างเปล่า');
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'sell', items: cart })
+                });
+                const json = await res.json();
+                if(json.status === 'success') {
+                    alert(`ชำระเงินสำเร็จ! เลขที่บิล: ${json.saleID}\nยอดรวม: ${json.totalRevenue} ฿`);
+                    cart = [];
+                    renderCart();
+                    fetchProducts();
                 } else {
-                    alert("❌ AI ไม่สามารถอ่านข้อมูลภาพนี้ได้: " + (res.message || ""));
+                    alert('เกิดข้อผิดพลาด: ' + json.message);
                 }
-            });
+            } catch(err) { alert(err); }
         }
     </script>
 </body>
